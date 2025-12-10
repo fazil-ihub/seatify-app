@@ -2,8 +2,8 @@ import axios from "axios";
 import { message } from "antd";
 import { updateSuperadminVerification } from "../api/otpApi.jsx";
 
-export const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/routes`;
-// export const apiUrl = "https://api.seatifyai.com/api/routes";
+// export const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/routes`;
+export const apiUrl = "https://api.seatifyai.com/api/routes";
 const user_email = localStorage.getItem("userEmail");
 const user_role = localStorage.getItem("userRole");
 

@@ -19,7 +19,6 @@ dotenv.config({ path: envFile });
 const allowedOrigins = [
   "https://app.seatifyai.com",
   "https://seatifyai.com",
-  "http://localhost:5173",
 ];
 
 var corsOptions = {
