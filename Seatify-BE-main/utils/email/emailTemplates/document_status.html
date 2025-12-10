@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Order Status Update</title>
+    <style>
+      body {
+        background-color: #f4f4f4;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 30px auto;
+        background: #fff;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+      .email-header {
+        background-color: #6a0dad;
+        color: #ffffff;
+        padding: 30px;
+        text-align: center;
+      }
+      .email-header img {
+        max-width: 160px;
+        background-color: white;
+        padding: 8px;
+        border-radius: 8px;
+      }
+      .email-header h1 {
+        margin: 20px 0 0;
+        font-size: 24px;
+        color: #ffffff;
+      }
+      .email-body {
+        padding: 30px;
+        color: #444;
+        font-size: 16px;
+      }
+      .email-body p {
+        margin-bottom: 15px;
+      }
+      .email-body a {
+        color: #6a0dad;
+        text-decoration: none;
+      }
+      .email-footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 13px;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        <img
+          src="https://i.postimg.cc/qvxRDKtG/Seatifyai-Logo.png"
+          alt="Seatify Logo"
+          style="width: 160px"
+        />
+        <h1>Document Status Update</h1>
+      </div>
+      <div class="email-body">
+        <p>Hi {{customer_name}},</p>
+        <p>
+          We're writing to let you know that the status of your admission
+          <strong>#{{order_id}}</strong> has been updated.
+        </p>
+        <p><strong>Current Status:</strong> {{order_status}}</p>
+
+        <!--p>You can view your order and track its progress here:<br>
+        <a href="{{order_link}}">{{order_link}}</a>
+      </p-->
+
+        <p>
+          If you have any questions or need assistance, please feel free to
+          reach out to our support team.
+        </p>
+
+        <p>Thank you for making payment for admission!</p>
+      </div>
+      <div class="email-footer">
+        © {{year}} {{company_name}} . All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add to your global CSS or Tailwind CSS file */
+/* body {
+  background: linear-gradient(to bottom right, #C2C2FF, #F0D8FE, #85AACC);
+  color: #121212;
+  min-height: 100vh; 
+  margin: 0;
+} */
+
+/* Set Swiper container padding and slide padding to 0 */
+.swiper-container,
+.swiper-slide {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove any background that might be causing the gray effect */
+.swiper-container,
+.swiper-slide {
+  background-color: transparent !important;
+}
+
+/* Optional: Remove shadow background */
+.swiper-slide-shadow-left,
+.swiper-slide-shadow-right {
+  background-color: transparent !important;
+}
+
+:where(.css-dev-only-do-not-override-49qm).ant-card .ant-card-body {
+  padding: 13px;
+  border-radius: 0 0 8px 8px;
+}
+
+.breadcrumb .p-4 {
+  padding: 0px !important;
+}
+
+@layer utilities {
+  .custom-scrollbar {
+    scrollbar-width: none;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

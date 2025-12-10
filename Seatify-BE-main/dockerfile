@@ -1,0 +1,21 @@
+FROM node:18-alpine
+
+WORKDIR /
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies with specific approach to bcrypt
+RUN npm install --omit=optional && \
+    echo "Patch applied"
+
+# Copy source code
+COPY . .
+
+# Expose the correct port
+EXPOSE 3003
+
+# Run patch one more time in case the COPY overwrote it
+
+# Start the application
+CMD ["node", "server.js"]
