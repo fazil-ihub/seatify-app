@@ -3,7 +3,7 @@ import axios from "axios";
 import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const baseUrl = "https://seatifyai.com/apicall";
+const baseUrl = "https://k12.velzx.com/apicall";
 
 // const GEMINI_API_KEY = "AIzaSyB_QM4ickU1TFEeKxj1cxD_gZnhb5qsYPo";
 // const GEMINI_API_KEY = "AIzaSyB_QM4ickU1TFEeKxj1cxD_gZnhb5qsYP1";

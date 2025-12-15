@@ -17,8 +17,10 @@ let envFile = ".env";
 dotenv.config({ path: envFile });
 
 const allowedOrigins = [
-  "https://app.seatifyai.com",
-  "https://seatifyai.com",
+  "https://app.k12.velzx.com",
+  "https://k12.velzx.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
 ];
 
 var corsOptions = {

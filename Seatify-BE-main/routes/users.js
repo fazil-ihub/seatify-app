@@ -27,7 +27,7 @@ import {
 
 const multipartyMiddleware = multiparty();
 
-const baseUrl = "https://seatifyai.com/apicall";
+const baseUrl = "https://k12.velzx.com/apicall";
 
 var router = express.Router();
 
