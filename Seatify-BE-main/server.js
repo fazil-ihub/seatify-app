@@ -16,29 +16,9 @@ let envFile = ".env";
 
 dotenv.config({ path: envFile });
 
-const allowedOrigins = [
-  "https://app.k12.velzx.com",
-  "https://k12.velzx.com",
-  "http://localhost:5173",
-  "http://localhost:3000",
-];
-
 var corsOptions = {
-  // origin: "*",
-  origin: (origin, callback) => {
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
-    }
-  },
-
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: ["https://k12.seatifyai.com", "https://k12.velzx.com"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 };
 

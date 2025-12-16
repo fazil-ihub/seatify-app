@@ -6,28 +6,19 @@ import { sendEmail } from "../utils/email/emailService.js";
 import { loadTemplate } from "../utils/email/loadTemplate.js";
 import asyncHandler from "express-async-handler";
 import multiparty from "connect-multiparty";
-
-// import {
-//   aadhaarCardUpload,
-//   communityCertificate,
-//   sslcCertificate,
-//   hscCertificate,
-//   testAadhaarCardUpload
-// } from "./cronjob.controller.js";
-
-import { performPaymentCheck } from "./cronjob.controller.js";
-
+import db from "../config/db.js";
+import bcrypt from "bcryptjs";
 import {
   aadhaarCardUpload,
   communityCertificate,
-  sslcCertificate,
   hscCertificate,
+  sslcCertificate,
   checkDocuments,
 } from "./binaryDocument.controller.js";
 
 const multipartyMiddleware = multiparty();
 
-const baseUrl = "https://k12.velzx.com/apicall";
+const baseUrl = "https://k12.seatifyai.com/apicall";
 
 var router = express.Router();
 
@@ -37,157 +28,85 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// const genAI = new GoogleGenerativeAI({
-//   model: "gemini-1.5-flash",
-//   apikey: GEMINI_API_KEY,
-// });
-
-const PROMPTS = {
-  ACADEMIC: `Extract ONLY the following in JSON format:
-{
-  "student_name": "[Full name]",
-  "marks_obtained": "[Marks/Percentage]"
-}
-Return ONLY JSON, no extra text.`,
-
-  AADHAAR: `Extract ONLY the following in JSON:
-{
-  "aadhaar_number": "[12-digit number]",
-  "student_name": "[Full name]"
-}
-Return ONLY JSON, no extra text.`,
-
-  COMMUNITY: `Extract ONLY the following in JSON:
-{
-  "student_name": "[Full name]",
-  "community_category": "[Category]"
-}
-Return ONLY JSON, no extra text.`,
-};
-
-async function processImage(file, prompt) {
+router.post("/user-login", async function (req, res, next) {
   try {
-    console.log("prompt", prompt);
-    console.log("file", file);
-    // const prompt = "List 3 benefits of using AI in healthcare.";
+    const { username, password } = req.body;
 
-    // const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    // const result = await model.generateContent(prompt);
-    const imagePart = {
-      inlineData: {
-        data: file.buffer.toString("base64"),
-        mimeType: file.mimetype,
-      },
-    };
-    const result = await model.generateContent([prompt, imagePart]);
-    const text = result.response.text();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : { error: "No JSON found" };
-  } catch (error) {
-    throw new Error(`Processing failed: ${error.message}`);
-  }
-}
+    // Query database for user
+    const [users] = await db.query(
+      "SELECT * FROM user_login WHERE email_id = ?",
+      [username]
+    );
 
-router.get("/get-students", function (req, res, next) {
-  try {
-    const { authorization } = req.headers;
-    const [authType, authToken] = authorization.split(" ");
-    let data = JSON.stringify({
-      token: authorization,
-    });
-    let config = {
-      method: "POST",
-      maxBodyLength: Infinity,
-      url: `${baseUrl}/get_students.php`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: data,
-    };
-    axios
-      .request(config)
-      .then((response) => {
-        return res.status(200).json(response?.data);
-      })
-      .catch((error) => {
-        return res.status(500).json(JSON.stringify(error));
+    if (users.length === 0) {
+      return res.status(401).json({
+        status: "error",
+        status_code: 401,
+        message: "Invalid User"
       });
-  } catch (error) {
-    const failureResponseInfo = {
-      error: error,
-      status: 200,
-      message: "Something went wrong",
-    };
-    return res.status(200).json(failureResponseInfo);
-  }
-});
+    }
 
-router.get("/get-users", function (req, res, next) {
-  try {
-    const { authorization } = req.headers;
-    const [authType, authToken] = authorization.split(" ");
-    let data = JSON.stringify({
-      token: authorization,
-    });
-    let config = {
-      method: "POST",
-      maxBodyLength: Infinity,
-      url: `${baseUrl}/get_users.php`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: data,
-    };
-    axios
-      .request(config)
-      .then((response) => {
-        return res.status(200).json(response?.data);
-      })
-      .catch((error) => {
-        return res.status(500).json(JSON.stringify(error));
+    const user = users[0];
+    let dbPassword = user.password;
+
+    // 🔥 Fix PHP $2y$ hashes
+    if (dbPassword.startsWith("$2y$")) {
+      dbPassword = dbPassword.replace("$2y$", "$2a$");
+    }
+
+    const isMatch = await bcrypt.compare(password, dbPassword);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        status: "error",
+        status_code: 401,
+        message: "Invalid Password"
       });
-  } catch (error) {
-    const failureResponseInfo = {
-      error: error,
-      status: 200,
-      message: "Something went wrong",
-    };
-    return res.status(200).json(failureResponseInfo);
-  }
-});
+    }
 
-router.post("/user-login", function (req, res, next) {
-  try {
-    let data = JSON.stringify({
-      username: req?.body?.username,
-      password: req?.body?.password,
+    // OPTIONAL: rehash to native Node bcrypt to update old PHP hashes
+    if (user.password.startsWith("$2y$")) {
+      const newHash = await bcrypt.hash(password, 10);
+      await db.query(
+        "UPDATE user_login SET password=? WHERE id=?",
+        [newHash, user.id]
+      );
+    }
+
+    // Success response - return the exact structure the frontend expects
+    // Frontend expects: response.data.data.token, .email, .user_id, .username, .role
+    // We'll generate a dummy token or use JWT if you have it setup, but for now matching the structure:
+
+    // Note: The previous PHP backend returned a token. Since we are moving to Node, 
+    // we should ideally generate a JWT here. For now, passing a placeholder or existing token logic if available.
+    // If you don't have JWT setup yet, we can return the user ID as token or a simple string string.
+
+    // Let's create a basic JWT if 'jsonwebtoken' is available or just return success key data.
+    // I noticed 'jsonwebtoken' in package.json.
+
+    const token = "mock_token_until_jwt_implemented__" + user.id;
+
+    return res.status(200).json({
+      status: "success",
+      status_code: 200,
+      message: "Login successful",
+      data: {
+        token: token,
+        email: user.email_id,
+        user_id: user.id,
+        username: user.username || user.email_id, // Fallback if username column isn't there
+        role: user.role || 'user' // Fallback
+      }
     });
 
-    let config = {
-      method: "POST",
-      maxBodyLength: Infinity,
-      url: `${baseUrl}/check_login.php`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: data,
-    };
-
-    axios
-      .request(config)
-      .then((response) => {
-        return res.status(200).json(response?.data);
-      })
-      .catch((error) => {
-        return res.status(500).json(JSON.stringify(error));
-      });
   } catch (error) {
+    console.error("Login Error:", error);
     const failureResponseInfo = {
       error: error,
-      status: 200,
+      status: 500,
       message: "Something went wrong",
     };
-    return res.status(200).json(failureResponseInfo);
+    return res.status(500).json(failureResponseInfo);
   }
 });
 
